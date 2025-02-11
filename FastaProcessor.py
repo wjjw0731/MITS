@@ -59,4 +59,6 @@ class FastaProcessor:
         # Filter rare species
         species_counts = df['s'].value_counts()
         valid_species = species_counts[species_counts >= min_samples].index
-        return df[df['s'].isin(valid_species)].reset_index(drop=True)
+        df = df[df['s'].isin(valid_species)].reset_index(drop=True)
+        df.drop(columns='index', inplace=True)
+        return df
