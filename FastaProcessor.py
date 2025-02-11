@@ -31,18 +31,20 @@ class FastaProcessor:
 
     @staticmethod
     def parse_taxonomy(headers: list) -> pd.DataFrame:
-        """Extract taxonomic labels from headers (k__...;p__... format)."""
-        taxonomy_levels = ['k', 'p', 'c', 'o', 'f', 'g', 's']
-        data = {level: [] for level in taxonomy_levels}
+        df = pd.DataFrame({'index': headers})
 
-        for header in headers:
-            taxa = re.split(r'[;|]', header)
-            for i, level in enumerate(taxonomy_levels):
-                value = taxa[i].split('__')[-1] if i < len(taxa) else None
-                data[level].append(value)
+        prefixes = ['k', 'p', 'c', 'o', 'f', 'g', 's']
 
-        return pd.DataFrame(data)
+        for index, row in df.iterrows():
+            taxon_info = row['index'].split('|')[1].split(';')
 
+            for ind, (prefix, taxon) in enumerate(zip(prefixes, taxon_info)):
+                if prefix != 's':
+                    df.at[index, prefix] = taxon.split('__')[-1]
+                else:
+                    df.at[index, prefix] = row['index'].split('|')[-1]
+
+        return df
     @classmethod
     def process(cls, file_path: str, min_samples: int = 10) -> pd.DataFrame:
         """Full processing pipeline."""
